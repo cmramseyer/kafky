@@ -198,3 +198,33 @@ El evento `order.created` se publica en:
 ```text
 orders.events
 ```
+
+## Consumir Eventos De Orders
+
+La app incluye un consumer Karafka que escucha `orders.events` y loguea los mensajes recibidos.
+
+Levantar el consumer:
+
+```bash
+rvm use 3.4.3
+bundle exec karafka server
+```
+
+Flujo manual para probarlo:
+
+```bash
+docker compose up -d
+bin/rails server
+```
+
+Luego crea una orden desde la app y publica la outbox:
+
+```bash
+bin/rails outbox:publish
+```
+
+En la terminal donde corre `bundle exec karafka server` deberias ver un log similar a:
+
+```text
+Kafka orders.events message received: key="1" payload={...}
+```
