@@ -1,0 +1,45 @@
+<% content_for :title, "Orders" %>
+
+<main class="page">
+  <div class="page-header">
+    <div>
+      <h1>Orders</h1>
+      <p>Listado de ordenes con customer y products.</p>
+    </div>
+
+    <%= link_to "New order", new_order_path, class: "button" %>
+  </div>
+
+  <% if notice.present? %>
+    <p class="notice"><%= notice %></p>
+  <% end %>
+
+  <table class="orders-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Customer</th>
+        <th>Email</th>
+        <th>Products</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @orders.each do |order| %>
+        <tr>
+          <td><%= order.id %></td>
+          <td><%= order.customer.name %></td>
+          <td><%= order.customer.email %></td>
+          <td>
+            <%= order.products.map { |product| "#{product.name} (#{product.category.name})" }.to_sentence %>
+          </td>
+        </tr>
+      <% end %>
+
+      <% if @orders.empty? %>
+        <tr>
+          <td colspan="4">No orders found.</td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</main>
