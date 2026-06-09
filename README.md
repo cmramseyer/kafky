@@ -162,3 +162,39 @@ inventory.events.dlq
 ```
 
 Por ahora la app guarda eventos `order.created` en la tabla `outbox_events`. El siguiente paso es publicar esos eventos en Kafka.
+
+## Publicar Outbox En Kafka
+
+La app usa Karafka para publicar eventos pendientes de `outbox_events` hacia Kafka.
+
+Por defecto Rails publica contra:
+
+```text
+localhost:9092
+```
+
+Puedes cambiarlo con:
+
+```bash
+KAFKA_BOOTSTRAP_SERVERS=localhost:9092 bin/rails outbox:publish
+```
+
+Publicar eventos pendientes:
+
+```bash
+bin/rails outbox:publish
+```
+
+Flujo actual:
+
+- `orders#create` crea la orden.
+- En la misma transaccion crea un evento `order.created` en `outbox_events`.
+- `bin/rails outbox:publish` publica eventos pendientes en Kafka.
+- Si Kafka confirma el envio, el evento se marca con `published_at`.
+- Si falla el envio, el evento queda pendiente para reintentar.
+
+El evento `order.created` se publica en:
+
+```text
+orders.events
+```
