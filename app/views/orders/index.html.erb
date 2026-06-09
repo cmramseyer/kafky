@@ -4,7 +4,7 @@
   <div class="page-header">
     <div>
       <h1>Orders</h1>
-      <p>Listado de ordenes con customer y products.</p>
+      <p>Listado de ordenes con customer, products y cantidades.</p>
     </div>
 
     <%= link_to "New order", new_order_path, class: "button" %>
@@ -30,7 +30,7 @@
           <td><%= order.customer.name %></td>
           <td><%= order.customer.email %></td>
           <td>
-            <%= order.products.map { |product| "#{product.name} (#{product.category.name})" }.to_sentence %>
+            <%= order.order_products.map { |item| "#{item.product.name} x#{item.quantity} (#{item.product.category.name})" }.to_sentence %>
           </td>
         </tr>
       <% end %>

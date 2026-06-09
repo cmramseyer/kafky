@@ -120,6 +120,19 @@ body {
   padding: 10px;
 }
 
+.quantity-option {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quantity-option input {
+  border: 1px solid #b7c0cc;
+  border-radius: 8px;
+  font: inherit;
+  padding: 8px;
+  width: 80px;
+}
+
 .checkbox-option small {
   color: #5f6b7a;
   display: block;

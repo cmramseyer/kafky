@@ -4,7 +4,7 @@
   <div class="page-header">
     <div>
       <h1>New order</h1>
-      <p>Selecciona un customer y uno o mas products.</p>
+      <p>Selecciona un customer y define cantidades para uno o mas products.</p>
     </div>
 
     <%= link_to "Back to orders", orders_path, class: "button secondary" %>
@@ -30,14 +30,15 @@
     <fieldset class="field">
       <legend>Products</legend>
 
-      <%= form.collection_check_boxes :product_ids, @products, :id, :name do |product_field| %>
-        <% product = product_field.object %>
-        <label class="checkbox-option">
-          <%= product_field.check_box %>
+      <% @products.each do |product| %>
+        <label class="checkbox-option quantity-option">
           <span>
             <%= product.name %>
-            <small><%= product.category.name %> - <%= number_to_currency(product.price) %></small>
+            <small>
+              <%= product.category.name %> - <%= number_to_currency(product.price) %> - Stock: <%= product.stock %>
+            </small>
           </span>
+          <%= number_field_tag "order[product_quantities][#{product.id}]", @product_quantities[product.id.to_s], min: 0, step: 1, placeholder: "Qty" %>
         </label>
       <% end %>
     </fieldset>
