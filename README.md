@@ -144,7 +144,7 @@ Publicar un mensaje de prueba manualmente:
 Luego escribe un JSON y presiona Enter:
 
 ```json
-{"event_type":"order.created","order":{"id":1}}
+{"event_id":"manual-test-1","event_type":"order.created","event_version":1,"source":"manual","occurred_at":"2026-06-09T10:00:00Z","data":{"order":{"id":1,"customer_id":1,"products":[{"id":1,"quantity":1}]}}}
 ```
 
 Para salir del producer o consumer, presiona `Ctrl+C`.
@@ -197,6 +197,27 @@ El evento `order.created` se publica en:
 
 ```text
 orders.events
+```
+
+Formato actual del mensaje:
+
+```json
+{
+  "event_id": "uuid",
+  "event_type": "order.created",
+  "event_version": 1,
+  "source": "kafky",
+  "occurred_at": "2026-06-09T10:00:00Z",
+  "data": {
+    "order": {
+      "id": 1,
+      "customer_id": 1,
+      "products": [
+        { "id": 1, "quantity": 2 }
+      ]
+    }
+  }
+}
 ```
 
 ## Consumir Eventos De Orders

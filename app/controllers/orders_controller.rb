@@ -72,16 +72,20 @@ class OrdersController < ApplicationController
     {
       event_id: event_id,
       event_type: "order.created",
+      event_version: 1,
+      source: "kafky",
       occurred_at: Time.current.iso8601,
-      order: {
-        id: @order.id,
-        customer_id: @order.customer_id,
-        products: @order.order_products.map do |order_product|
-          {
-            id: order_product.product_id,
-            quantity: order_product.quantity
-          }
-        end
+      data: {
+        order: {
+          id: @order.id,
+          customer_id: @order.customer_id,
+          products: @order.order_products.map do |order_product|
+            {
+              id: order_product.product_id,
+              quantity: order_product.quantity
+            }
+          end
+        }
       }
     }
   end
