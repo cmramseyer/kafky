@@ -1,0 +1,37 @@
+<% content_for :title, "Provider Orders" %>
+
+<main class="page">
+  <div class="page-header">
+    <div>
+      <h1>Provider orders</h1>
+      <p>Ordenes generadas para reponer stock con proveedores.</p>
+    </div>
+
+    <%= link_to "Back to orders", orders_path, class: "button secondary" %>
+  </div>
+
+  <table class="orders-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Product</th>
+        <th>Quantity</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @provider_orders.each do |provider_order| %>
+        <tr>
+          <td><%= provider_order.id %></td>
+          <td><%= provider_order.product.name %></td>
+          <td><%= provider_order.quantity %></td>
+        </tr>
+      <% end %>
+
+      <% if @provider_orders.empty? %>
+        <tr>
+          <td colspan="3">No provider orders found.</td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</main>

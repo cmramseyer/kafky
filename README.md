@@ -305,3 +305,45 @@ Formato actual de `inventory.low_stock`:
 ```
 
 Por ahora se crea un evento `inventory.low_stock` cada vez que el producto queda bajo el threshold. Mas adelante se agregara control de duplicados.
+
+## Provider Orders
+
+La app incluye `provider_orders#index` para ver ordenes de reposicion generadas desde eventos de inventario:
+
+```text
+http://localhost:3000/provider_orders
+```
+
+La tabla muestra:
+
+- `id`
+- `product`
+- `quantity`
+
+El mismo proceso `bundle exec karafka server` tambien escucha `inventory.events`. Cuando recibe un evento `inventory.low_stock`:
+
+```text
+JSON Kafka -> InventoryLowStockEvent::Adapter -> InventoryLowStockEvent::V1 -> ProviderOrderRequestHandler
+```
+
+El handler crea un `ProviderOrder` si todavia no existe uno para ese producto. Esta validacion es intencionalmente simple y no contempla concurrencia.
+
+La cantidad solicitada al proveedor se calcula como:
+
+```ruby
+product.reorder_threshold * 2
+```
+
+Para probar el flujo completo manual:
+
+```bash
+bin/rails outbox:publish
+```
+
+La primera ejecucion publica `order.created`; el consumer puede crear un `inventory.low_stock` pendiente. Ejecuta otra vez:
+
+```bash
+bin/rails outbox:publish
+```
+
+La segunda ejecucion publica `inventory.low_stock`; el consumer de inventario crea el `ProviderOrder`.
