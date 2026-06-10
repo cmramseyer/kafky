@@ -222,7 +222,7 @@ Formato actual del mensaje:
 
 ## Consumir Eventos De Orders
 
-La app incluye un consumer Karafka que escucha `orders.events` y loguea los mensajes recibidos.
+La app incluye un consumer Karafka que escucha `orders.events`, convierte el JSON a un PORO versionado y descuenta stock.
 
 Levantar el consumer:
 
@@ -244,8 +244,33 @@ Luego crea una orden desde la app y publica la outbox:
 bin/rails outbox:publish
 ```
 
-En la terminal donde corre `bundle exec karafka server` deberias ver un log similar a:
+En la terminal donde corre `bundle exec karafka server` deberias ver logs similares a:
 
 ```text
-Kafka orders.events message received: key="1" payload={...}
+Kafka orders.events message received: key="1" event_id="..." source=kafky event_version=1
+OrderCreatedEvent stock decremented: event_id="..." order_id=1 product_id=1 quantity=2 stock_before=10 stock_after=8
 ```
+
+El consumer usa esta capa antes de tocar modelos Active Record:
+
+```text
+JSON Kafka -> OrderCreatedEvent::Adapter -> OrderCreatedEvent::V1 -> OrderCreatedEventHandler
+```
+
+El adapter decide como construir `OrderCreatedEvent::V1` usando:
+
+- `source`
+- `event_version`
+
+Por ahora soporta:
+
+- `source: "kafky"`, `event_version: 1`
+- `source: "manual"`, `event_version: 1`
+
+Para productos acepta tanto `quantity` como `qty`, pero el PORO interno siempre expone `quantity`.
+
+Si no hay stock suficiente, el consumer no bloquea el procesamiento:
+
+- deja el stock en `0`
+- loguea un warning
+- continua con el siguiente producto/mensaje
