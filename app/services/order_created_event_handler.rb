@@ -1,3 +1,5 @@
+require "securerandom"
+
 class OrderCreatedEventHandler
   def self.call(...)
     new(...).call
@@ -38,10 +40,28 @@ class OrderCreatedEventHandler
     end
 
     product.update!(stock: stock_after)
+    create_low_stock_event(product) if product.stock <= product.reorder_threshold
 
     Rails.logger.info(
       "OrderCreatedEvent stock decremented: event_id=#{event.event_id} order_id=#{event.order.id} " \
       "product_id=#{product.id} quantity=#{event_product.quantity} stock_before=#{stock_before} stock_after=#{stock_after}"
+    )
+  end
+
+  def create_low_stock_event(product)
+    event_id = SecureRandom.uuid
+
+    OutboxEvent.create!(
+      event_id: event_id,
+      event_type: "inventory.low_stock",
+      aggregate_type: "Product",
+      aggregate_id: product.id,
+      payload: InventoryLowStockEvent::V1.payload(event_id: event_id, product: product)
+    )
+
+    Rails.logger.info(
+      "InventoryLowStockEvent created: event_id=#{event_id} product_id=#{product.id} " \
+      "stock=#{product.stock} reorder_threshold=#{product.reorder_threshold}"
     )
   end
 end

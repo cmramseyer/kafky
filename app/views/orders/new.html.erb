@@ -30,17 +30,30 @@
     <fieldset class="field">
       <legend>Products</legend>
 
-      <% @products.each do |product| %>
-        <label class="checkbox-option quantity-option">
-          <span>
-            <%= product.name %>
-            <small>
-              <%= product.category.name %> - <%= number_to_currency(product.price) %> - Stock: <%= product.stock %>
-            </small>
-          </span>
-          <%= number_field_tag "order[product_quantities][#{product.id}]", @product_quantities[product.id.to_s], min: 0, step: 1, placeholder: "Qty" %>
-        </label>
-      <% end %>
+      <table class="orders-table products-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Available stock</th>
+            <th>Quantity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @products.each do |product| %>
+            <tr>
+              <td><%= product.name %></td>
+              <td><%= product.category.name %></td>
+              <td><%= number_to_currency(product.price) %></td>
+              <td><%= product.stock %></td>
+              <td>
+                <%= number_field_tag "order[product_quantities][#{product.id}]", @product_quantities[product.id.to_s], min: 0, step: 1, placeholder: "Qty" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
     </fieldset>
 
     <%= form.submit "Create order", class: "button" %>

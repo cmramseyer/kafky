@@ -1,6 +1,7 @@
 class OutboxEventPublisher
   TOPICS_BY_EVENT_TYPE = {
-    "order.created" => "orders.events"
+    "order.created" => "orders.events",
+    "inventory.low_stock" => "inventory.events"
   }.freeze
 
   def self.call(...)

@@ -199,6 +199,12 @@ El evento `order.created` se publica en:
 orders.events
 ```
 
+El evento `inventory.low_stock` se publica en:
+
+```text
+inventory.events
+```
+
 Formato actual del mensaje:
 
 ```json
@@ -249,6 +255,7 @@ En la terminal donde corre `bundle exec karafka server` deberias ver logs simila
 ```text
 Kafka orders.events message received: key="1" event_id="..." source=kafky event_version=1
 OrderCreatedEvent stock decremented: event_id="..." order_id=1 product_id=1 quantity=2 stock_before=10 stock_after=8
+InventoryLowStockEvent created: event_id="..." product_id=1 stock=4 reorder_threshold=5
 ```
 
 El consumer usa esta capa antes de tocar modelos Active Record:
@@ -274,3 +281,27 @@ Si no hay stock suficiente, el consumer no bloquea el procesamiento:
 - deja el stock en `0`
 - loguea un warning
 - continua con el siguiente producto/mensaje
+
+Si despues de descontar stock un producto queda en o debajo de `reorder_threshold`, el handler crea un nuevo `OutboxEvent` con tipo `inventory.low_stock`.
+
+Formato actual de `inventory.low_stock`:
+
+```json
+{
+  "event_id": "uuid",
+  "event_type": "inventory.low_stock",
+  "event_version": 1,
+  "source": "kafky",
+  "occurred_at": "2026-06-09T10:00:00Z",
+  "data": {
+    "product": {
+      "id": 1,
+      "name": "Wireless Mouse",
+      "stock": 4,
+      "reorder_threshold": 5
+    }
+  }
+}
+```
+
+Por ahora se crea un evento `inventory.low_stock` cada vez que el producto queda bajo el threshold. Mas adelante se agregara control de duplicados.
