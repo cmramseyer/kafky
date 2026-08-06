@@ -34,10 +34,10 @@ module OrderCreatedEvent
     end
 
     class Product
-      attr_reader :id, :quantity
+      attr_reader :sku, :quantity
 
-      def initialize(id:, quantity:)
-        @id = id
+      def initialize(sku:, quantity:)
+        @sku = sku
         @quantity = quantity
       end
     end

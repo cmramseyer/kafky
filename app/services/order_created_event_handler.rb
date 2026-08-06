@@ -22,10 +22,10 @@ class OrderCreatedEventHandler
   attr_reader :event
 
   def decrement_stock(event_product)
-    product = Product.lock.find_by(id: event_product.id)
+    product = Product.lock.find_by(sku: event_product.sku)
 
     unless product
-      Rails.logger.warn("OrderCreatedEvent product not found: event_id=#{event.event_id} product_id=#{event_product.id}")
+      Rails.logger.warn("OrderCreatedEvent product not found: event_id=#{event.event_id} product_sku=#{event_product.sku}")
       return
     end
 
@@ -35,7 +35,7 @@ class OrderCreatedEventHandler
     if event_product.quantity > stock_before
       Rails.logger.warn(
         "OrderCreatedEvent insufficient stock: event_id=#{event.event_id} order_id=#{event.order.id} " \
-        "product_id=#{product.id} requested=#{event_product.quantity} stock_before=#{stock_before} stock_after=0"
+        "product_sku=#{product.sku} requested=#{event_product.quantity} stock_before=#{stock_before} stock_after=0"
       )
     end
 
@@ -44,7 +44,7 @@ class OrderCreatedEventHandler
 
     Rails.logger.info(
       "OrderCreatedEvent stock decremented: event_id=#{event.event_id} order_id=#{event.order.id} " \
-      "product_id=#{product.id} quantity=#{event_product.quantity} stock_before=#{stock_before} stock_after=#{stock_after}"
+      "product_sku=#{product.sku} quantity=#{event_product.quantity} stock_before=#{stock_before} stock_after=#{stock_after}"
     )
   end
 

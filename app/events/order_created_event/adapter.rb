@@ -51,7 +51,7 @@ module OrderCreatedEvent
     def build_products(products_payload)
       products_payload.map do |product_payload|
         V1::Product.new(
-          id: product_payload.fetch("id").to_i,
+          sku: product_payload.fetch("sku"),
           quantity: product_quantity(product_payload)
         )
       end

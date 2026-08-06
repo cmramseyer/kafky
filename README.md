@@ -109,7 +109,7 @@ Formato actual del mensaje:
       "id": 1,
       "customer_id": 1,
       "products": [
-        { "id": 1, "quantity": 2 }
+        { "sku": "MOUSE-WL-001", "quantity": 2 }
       ]
     }
   }
@@ -144,7 +144,7 @@ En la terminal donde corre `bundle exec karafka server` deberias ver logs simila
 
 ```text
 Kafka orders.events message received: key="1" event_id="..." source=kafky event_version=1
-OrderCreatedEvent stock decremented: event_id="..." order_id=1 product_id=1 quantity=2 stock_before=10 stock_after=8
+OrderCreatedEvent stock decremented: event_id="..." order_id=1 product_sku=MOUSE-WL-001 quantity=2 stock_before=10 stock_after=8
 InventoryLowStockEvent created: event_id="..." product_id=1 stock=4 reorder_threshold=5
 ```
 

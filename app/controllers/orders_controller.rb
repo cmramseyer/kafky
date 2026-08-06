@@ -81,7 +81,7 @@ class OrdersController < ApplicationController
           customer_id: @order.customer_id,
           products: @order.order_products.map do |order_product|
             {
-              id: order_product.product_id,
+              sku: order_product.product.sku,
               quantity: order_product.quantity
             }
           end
