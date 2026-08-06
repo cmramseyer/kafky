@@ -89,12 +89,6 @@ El evento `order.created` se publica en:
 orders.events
 ```
 
-El evento `inventory.low_stock` se publica en:
-
-```text
-inventory.events
-```
-
 Formato actual del mensaje:
 
 ```json
@@ -116,85 +110,11 @@ Formato actual del mensaje:
 }
 ```
 
-## Consumir Eventos De Orders
+## Procesar Ordenes En Inventario
 
-La app incluye un consumer Karafka que escucha `orders.events`, convierte el JSON a un PORO versionado y descuenta stock.
-
-Levantar el consumer:
-
-```bash
-rvm use 3.4.3
-bundle exec karafka server
-```
-
-Con Kafka levantado siguiendo las instrucciones de
-[kafky_kafka/README.md](../kafky_kafka/README.md), inicia la app:
-
-```bash
-bin/rails server
-```
-
-Luego crea una orden desde la app y publica la outbox:
-
-```bash
-bin/rails outbox:publish
-```
-
-En la terminal donde corre `bundle exec karafka server` deberias ver logs similares a:
-
-```text
-Kafka orders.events message received: key="1" event_id="..." source=kafky event_version=1
-OrderCreatedEvent stock decremented: event_id="..." order_id=1 product_sku=MOUSE-WL-001 quantity=2 stock_before=10 stock_after=8
-InventoryLowStockEvent created: event_id="..." product_id=1 stock=4 reorder_threshold=5
-```
-
-El consumer usa esta capa antes de tocar modelos Active Record:
-
-```text
-JSON Kafka -> OrderCreatedEvent::Adapter -> OrderCreatedEvent::V1 -> OrderCreatedEventHandler
-```
-
-El adapter decide como construir `OrderCreatedEvent::V1` usando:
-
-- `source`
-- `event_version`
-
-Por ahora soporta:
-
-- `source: "kafky"`, `event_version: 1`
-- `source: "manual"`, `event_version: 1`
-
-Para productos acepta tanto `quantity` como `qty`, pero el PORO interno siempre expone `quantity`.
-
-Si no hay stock suficiente, el consumer no bloquea el procesamiento:
-
-- deja el stock en `0`
-- loguea un warning
-- continua con el siguiente producto/mensaje
-
-Si despues de descontar stock un producto queda en o debajo de `reorder_threshold`, el handler crea un nuevo `OutboxEvent` con tipo `inventory.low_stock`.
-
-Formato actual de `inventory.low_stock`:
-
-```json
-{
-  "event_id": "uuid",
-  "event_type": "inventory.low_stock",
-  "event_version": 1,
-  "source": "kafky",
-  "occurred_at": "2026-06-09T10:00:00Z",
-  "data": {
-    "product": {
-      "id": 1,
-      "name": "Wireless Mouse",
-      "stock": 4,
-      "reorder_threshold": 5
-    }
-  }
-}
-```
-
-Por ahora se crea un evento `inventory.low_stock` cada vez que el producto queda bajo el threshold. Mas adelante se agregara control de duplicados.
+`kafky` solo crea y publica `order.created`; no consume `orders.events` ni
+descuenta stock. `kafky_storage` consume ese topic, valida disponibilidad,
+descuenta su inventario y publica `inventory.stock_updated`.
 
 ## Provider Orders
 
@@ -224,16 +144,6 @@ La cantidad solicitada al proveedor se calcula como:
 product.reorder_threshold * 2
 ```
 
-Para probar el flujo completo manual:
-
-```bash
-bin/rails outbox:publish
-```
-
-La primera ejecucion publica `order.created`; el consumer puede crear un `inventory.low_stock` pendiente. Ejecuta otra vez:
-
-```bash
-bin/rails outbox:publish
-```
-
-La segunda ejecucion publica `inventory.low_stock`; el consumer de inventario crea el `ProviderOrder`.
+La emision de `inventory.low_stock` se movera a `kafky_storage` en una etapa
+posterior. Mientras tanto, esta app conserva el consumer de `inventory.events`
+para el flujo existente de ordenes a proveedor.
