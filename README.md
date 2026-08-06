@@ -118,32 +118,6 @@ descuenta su inventario y publica `inventory.stock_updated`.
 
 ## Provider Orders
 
-La app incluye `provider_orders#index` para ver ordenes de reposicion generadas desde eventos de inventario:
-
-```text
-http://localhost:3000/provider_orders
-```
-
-La tabla muestra:
-
-- `id`
-- `product`
-- `quantity`
-
-El mismo proceso `bundle exec karafka server` tambien escucha `inventory.events`. Cuando recibe un evento `inventory.low_stock`:
-
-```text
-JSON Kafka -> InventoryLowStockEvent::Adapter -> InventoryLowStockEvent::V1 -> ProviderOrderRequestHandler
-```
-
-El handler crea un `ProviderOrder` si todavia no existe uno para ese producto. Esta validacion es intencionalmente simple y no contempla concurrencia.
-
-La cantidad solicitada al proveedor se calcula como:
-
-```ruby
-product.reorder_threshold * 2
-```
-
-La emision de `inventory.low_stock` se movera a `kafky_storage` en una etapa
-posterior. Mientras tanto, esta app conserva el consumer de `inventory.events`
-para el flujo existente de ordenes a proveedor.
+La vista `provider_orders#index` permanece temporalmente como comportamiento
+local heredado. `kafky` ya no consume `inventory.events`; el procesamiento de
+`inventory.low_stock` se implementara en `kafky_providers`.
