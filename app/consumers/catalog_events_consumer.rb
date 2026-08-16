@@ -40,6 +40,16 @@ class CatalogEventsConsumer < ApplicationConsumer
     product = Product.find_by!(sku: data.fetch("sku"))
 
     product.update!(price: data.fetch("prd_price"))
+    broadcast_product_price(product)
+  end
+
+  def broadcast_product_price(product)
+    Turbo::StreamsChannel.broadcast_replace_to(
+      "new_order_products",
+      target: ActionView::RecordIdentifier.dom_id(product, :order_form_price),
+      partial: "orders/product_price_update",
+      locals: { product: product }
+    )
   end
 
   def validate_event!(payload, event_type)

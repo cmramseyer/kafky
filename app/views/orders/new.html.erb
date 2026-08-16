@@ -1,5 +1,7 @@
 <% content_for :title, "New Order" %>
 
+<%= turbo_stream_from "new_order_products" %>
+
 <main class="page">
   <div class="page-header">
     <div>
@@ -45,8 +47,12 @@
             <tr>
               <td><%= product.name %></td>
               <td><%= product.category.name %></td>
-              <td><%= number_to_currency(product.price) %></td>
-              <td><%= product.stock %></td>
+              <td id="<%= dom_id(product, :order_form_price) %>">
+                <%= render "product_price", product: product %>
+              </td>
+              <td id="<%= dom_id(product, :order_form_stock) %>">
+                <%= render "product_stock", product: product %>
+              </td>
               <td>
                 <%= number_field_tag "order[product_quantities][#{product.id}]", @product_quantities[product.id.to_s], min: 0, step: 1, placeholder: "Qty" %>
               </td>

@@ -146,6 +146,27 @@ body {
   width: 80px;
 }
 
+@keyframes price-update-highlight {
+  0%,
+  100% {
+    background-color: transparent;
+  }
+
+  50% {
+    background-color: #fecaca;
+  }
+}
+
+.price-update-highlight {
+  animation: price-update-highlight 5s ease-in-out 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .price-update-highlight {
+    animation: price-update-highlight 10s ease-in-out;
+  }
+}
+
 .checkbox-option small {
   color: #5f6b7a;
   display: block;
